@@ -35,7 +35,7 @@ void *handle_message_thread(void *arg)
     int message_handling;
     while (1)
     {
-        ret = poll(read_fdp, 1, 1);
+        ret = poll(read_fdp, 1, 100);
         if (ret > 0)
         {
             printf("Ready handling\n");

@@ -107,7 +107,7 @@ int handling_message_for_multiple_clients(struct pollfd *fds, int *client_fd, ch
 
     if (fds->revents & POLLIN)
     {
-        int val_read = read(fds->fd, message_file_name, 1024);
+        int val_read = read(fds->fd, message_file_name, 100);
 
         if (val_read == 0)
         {
@@ -119,19 +119,16 @@ int handling_message_for_multiple_clients(struct pollfd *fds, int *client_fd, ch
         }
         else
         {
-            if (strcmp(message_file_name, "Close") == 0)
-            {
-                handling_message = CLOSE_MESSAGE;
-            }
-            else
-            {
-                handling_message = FIND_FILE;
-            }
+            handling_message = FIND_FILE;
+        }
+        if (strcmp(message_file_name, "Close") == 0)
+        {
+            handling_message = CLOSE_MESSAGE;
         }
     }
     else
     {
-        return DISCONNECTED;
+        return -1;
     }
 
     return handling_message;

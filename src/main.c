@@ -82,12 +82,6 @@ int main()
             {
                 printf("Error locking mutex\n");
             }
-            sprintf(status_message, "%s", CLOSE_FILE_MESSAGE);
-            state = pthread_mutex_unlock(&server_mtx);
-            if (state != 0)
-            {
-                printf("Error locking mutex\n");
-            }
 
             printf("%s\n", status_message);
             if (strcmp(status_message, CLOSE_FILE_MESSAGE) == 0)
@@ -95,10 +89,13 @@ int main()
                 printf("Closing all file\n");
                 for (int i = 0; i < MAXIMUM_CLIENT; i++)
                 {
-                    writen(client_fd[i], "Closing connect from server\n", 29);
-                    pthread_detach(manage_client_threads[i]);
-                    close(client_fd[i]);
-                    client_fd[i] = 0;
+                    if (client_fd[i] != 0)
+                    {
+                        writen(client_fd[i], "Closing connect from server\n", 29);
+                        pthread_detach(manage_client_threads[i]);
+                        close(client_fd[i]);
+                        client_fd[i] = 0;
+                    }
                 }
                 num_of_thread = 0;
                 break;
@@ -116,6 +113,11 @@ int main()
                         num_of_thread--;
                     }
                 }
+            }
+            state = pthread_mutex_unlock(&server_mtx);
+            if (state != 0)
+            {
+                printf("Error locking mutex\n");
             }
         }
     }
