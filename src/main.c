@@ -125,8 +125,5 @@ int main()
     printf("Closing the server\n");
     /*Close the server socket*/
     close(server_fd);
-    mq_close(server_mq);
-    mq_unlink(MANAGE_SERVER_QUEUE_NAME);
-
     return 0;
 }
