@@ -1,0 +1,5 @@
+*.o
+*.txt
+.vscode/
+create_binary_file
+main
