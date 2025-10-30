@@ -110,7 +110,11 @@ int main()
                         pthread_detach(manage_client_threads[i]);
                         close(client_fd[i]);
                         client_fd[i] = 0;
-                        num_of_thread--;
+                        if (num_of_thread > 0)
+                        {
+                            num_of_thread--;
+                        }
+                        break;
                     }
                 }
             }
