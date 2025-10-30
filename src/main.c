@@ -5,7 +5,7 @@
 
 char buff[1024];
 /*These structs are used to control multiple clients*/
-pthread_t manage_client_threads[MAXIMUM_CLIENT];
+
 struct pollfd read_fdps[MAXIMUM_CLIENT];
 struct pollfd connect_fdp;
 int ret, state;
@@ -45,6 +45,7 @@ int main()
         ret = poll(&connect_fdp, 1, 100);
 
         /*If there are new connection, accept the client's connection request*/
+        /*create new thread for the client*/
         if (ret > 0)
         {
 
@@ -64,7 +65,6 @@ int main()
                         perror("pthread_create");
                         printf("Error on pthread\n");
                         close(server_fd);
-                        mq_close(server_mq);
                         mq_unlink(MANAGE_SERVER_QUEUE_NAME);
                         return -1;
                     }
@@ -73,17 +73,18 @@ int main()
                 }
             }
         }
-
+        /*in order to avoid mutex blocking, the number of thread must be >0*/
+        /*get the global string status message after thread has unlocked the mutex*/
+        /*compare the message for each case, FIND_FILE, CLOSE_FILE, DISCONNECT_CLIENT*/
         if (num_of_thread > 0)
         {
-            printf("Ready to handle something\n");
             state = pthread_mutex_lock(&server_mtx);
             if (state != 0)
             {
                 printf("Error locking mutex\n");
             }
 
-            printf("%s\n", status_message);
+            /*when receiving CLOSE_FILE_MESSAGE, close all clients, detach all running thread*/
             if (strcmp(status_message, CLOSE_FILE_MESSAGE) == 0)
             {
                 printf("Closing all file\n");
@@ -100,6 +101,8 @@ int main()
                 num_of_thread = 0;
                 break;
             }
+            /*when receiving CLIENT_DISCONNECTED_MESSAGE, close the disconnected clients, detach thread of
+            disconnected client*/
             else if (strcmp(buff, CLIENT_DISCONNECTED_MESSAGE) == 0)
             {
                 printf("Disconnect now\n");

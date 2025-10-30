@@ -1,29 +1,8 @@
 #include "manage_server_with_thread.h"
 
-mqd_t server_mq;
-struct mq_attr attr;
 pthread_mutex_t server_mtx = PTHREAD_MUTEX_INITIALIZER;
 char status_message[1024];
-
-int init_server_message_queue()
-{
-    attr.mq_flags = 0;
-    attr.mq_maxmsg = MAX_MESSAGES;
-    attr.mq_msgsize = MAX_MSG_SIZE;
-    attr.mq_curmsgs = 0;
-
-    mq_unlink(MANAGE_SERVER_QUEUE_NAME);
-
-    server_mq = mq_open(MANAGE_SERVER_QUEUE_NAME, O_CREAT | O_RDWR, 0666, &attr);
-
-    if (server_mq == (mqd_t)-1)
-    {
-        perror("init_server_message_queue->mq_open");
-        return MQ_OPEN_ERROR;
-    }
-
-    return MQ_OPEN_SUCCESS;
-}
+pthread_t manage_client_threads[MAXIMUM_CLIENT];
 
 void *handle_message_thread(void *arg)
 {
@@ -35,7 +14,7 @@ void *handle_message_thread(void *arg)
     int message_handling;
     while (1)
     {
-        ret = poll(read_fdp, 1, 100);
+        ret = poll(read_fdp, 1, 1000);
         if (ret > 0)
         {
             printf("Ready handling\n");
@@ -88,6 +67,7 @@ void *handle_message_thread(void *arg)
                 }
             }
         }
+        ret = 0;
     }
 
     return NULL;

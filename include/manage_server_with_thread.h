@@ -15,16 +15,14 @@
 #define MAX_MESSAGES MAXIMUM_CLIENT
 #define MAX_MSG_SIZE 1024
 
-extern mqd_t server_mq;
-extern struct mq_attr attr;
 extern pthread_mutex_t server_mtx;
 extern char status_message[1024];
+extern pthread_t manage_client_threads[MAXIMUM_CLIENT];
 
-enum InitQueueState
-{
-    MQ_OPEN_ERROR = -1,
-    MQ_OPEN_SUCCESS
-};
-
-int init_server_message_queue();
+/**
+ * @brief Using pthread_create() with this function pointer as
+ * an argutment for pthread_create() to create a thread that manage incoming client connections
+ * @param arg: Passing struct pollfd * so the thread can monitor when the client is ready to read
+ * @return NULL
+ */
 void *handle_message_thread(void *arg);
