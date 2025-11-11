@@ -14,7 +14,7 @@
 extern struct sockaddr_in server;
 extern socklen_t len;
 extern int server_fd;
-extern int client_fd[MAXIMUM_CLIENT];
+extern int client_fd;
 extern char IP[INET_ADDRSTRLEN];
 extern uint16_t port_number;
 /**
@@ -55,7 +55,7 @@ int get_client_information(int *client_fd, socklen_t *len);
  * @brief This function is used to handle client's file request or file request of closing server
  * @return FIND_FILE=0 , CLOSE_MESSAGE=1
  */
-int handling_message_for_multiple_clients(struct pollfd *fds, int *client_fd, char *message_file_name);
+int handling_message_for_multiple_clients(int *client_fd, char *message_file_name);
 /**
  * @brief This function is used to find the file following client request
  * @return FILE_FOUND=1, FILE_NOT_FOUND=0
@@ -72,6 +72,7 @@ enum MessHandlingState
 {
     DISCONNECTED,
     FIND_FILE,
+    DO_NOTHING,
     CLOSE_MESSAGE,
 };
 

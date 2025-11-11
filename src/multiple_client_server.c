@@ -6,7 +6,7 @@ struct sockaddr_in server;
 socklen_t len = (socklen_t)sizeof(struct sockaddr_in);
 
 int server_fd;
-int client_fd[MAXIMUM_CLIENT];
+int client_fd;
 
 char IP[INET_ADDRSTRLEN];
 uint16_t port_number;
@@ -101,34 +101,30 @@ int get_client_information(int *client_fd, socklen_t *len)
     return SUCCESS;
 }
 
-int handling_message_for_multiple_clients(struct pollfd *fds, int *client_fd, char *message_file_name)
+int handling_message_for_multiple_clients(int *client_fd, char *message_file_name)
 {
     int handling_message = 0;
 
-    if (fds->revents & POLLIN)
-    {
-        int val_read = read(fds->fd, message_file_name, 100);
+    int val_read = read(*client_fd, message_file_name, 100);
 
-        if (val_read == 0)
-        {
-            close(fds->fd);
-            *client_fd = 0;
-            fds->fd = 0;
-            printf("Client disconnected\n\n");
-            handling_message = DISCONNECTED;
-        }
-        else
-        {
-            handling_message = FIND_FILE;
-        }
-        if (strcmp(message_file_name, "Close") == 0)
-        {
-            handling_message = CLOSE_MESSAGE;
-        }
+    if (val_read == 0)
+    {
+        close(*client_fd);
+        *client_fd = 0;
+        printf("Client disconnected\n\n");
+        handling_message = DISCONNECTED;
     }
     else
     {
-        return -1;
+        if (strcmp(message_file_name, "") == 0)
+        {
+            return DO_NOTHING;
+        }
+        handling_message = FIND_FILE;
+    }
+    if (strcmp(message_file_name, "Close") == 0)
+    {
+        handling_message = CLOSE_MESSAGE;
     }
 
     return handling_message;
