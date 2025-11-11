@@ -28,7 +28,7 @@ char *ptr;
 int main()
 {
 
-    /*create an TCP server using IPv4 address and defined maximum client*/
+    /*using shared memory object*/
     shm_unlink(OBJECT_NAME);
     int i = 0;
     do
@@ -45,27 +45,32 @@ int main()
             exit(EXIT_FAILURE);
         }
     } while (shared_mem_fd < 0);
-
+    /*set size for shared memory*/
     if (ftruncate(shared_mem_fd, SIZE) == -1)
     {
         perror("ftruncate");
         exit(EXIT_FAILURE);
     }
-
+    /*provide virtual address that points to shared memmory*/
     ptr = mmap(NULL, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shared_mem_fd, 0);
-
+    /*create TCP server with IPv4 address*/
     if (create_TCP_IPv4_server(&server, PORT, MAXIMUM_CLIENT, &server_fd, &len) == ERROR)
     {
         return -1;
     }
 
+    /*using poll for checking new connection*/
     connect_fd.fd = server_fd;
     connect_fd.events = POLLIN;
     printf("Ready to connect \n");
     int process_num = 0;
 
+    /*Parent process will wait for new connection*/
+    /*Child processes will manage all new clients*/
+
     while (1)
     {
+        /*if there is a new connection, accept and create child process for that client*/
         ret = poll(&connect_fd, 1, 100);
         if (ret > 0)
         {
@@ -86,13 +91,14 @@ int main()
                 exit(EXIT_FAILURE);
             }
         }
-
+        /*when shared object has Close message, close the server*/
         if (strcmp(ptr, "Close") == 0)
         {
             break;
         }
     }
-
+    /**********/
+    /*Child process*/
     if (client_process_id == 0)
     {
         printf("Client is using process with %d \n", getpid());
@@ -101,6 +107,7 @@ int main()
     }
     while (client_process_id == 0)
     {
+        /*when shared object has Close message, close the client*/
         if (strcmp(ptr, "Close") == 0)
         {
             close(client_fd);
@@ -117,6 +124,7 @@ int main()
             close(client_fd);
             exit(EXIT_FAILURE);
         }
+        /*handling message from client*/
         message_handling = handling_message_for_multiple_clients(&client_fd, message);
         if (message_handling == FIND_FILE)
         {
