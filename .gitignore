@@ -1,5 +1,7 @@
 *.o
+*.so
 *.txt
 .vscode/
 create_binary_file
 main
+path
