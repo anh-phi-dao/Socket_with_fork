@@ -91,6 +91,7 @@ int main()
                 exit(EXIT_FAILURE);
             }
         }
+        /*Catch a random child terminated signal*/
         childPID = waitpid(-1, NULL, WNOHANG);
         if (childPID > 0)
         {
@@ -150,7 +151,7 @@ int main()
             exit(EXIT_SUCCESS);
         }
     }
-
+    /*wait for the rest of child processes*/
     for (size_t i = 0; i < process_num; i++)
     {
         childPID = wait(NULL);
