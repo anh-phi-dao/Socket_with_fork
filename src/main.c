@@ -91,6 +91,13 @@ int main()
                 exit(EXIT_FAILURE);
             }
         }
+        childPID = waitpid(-1, NULL, WNOHANG);
+        if (childPID > 0)
+        {
+            printf("Client in PID:%d has closed\n", childPID);
+            process_num--;
+        }
+
         /*when shared object has Close message, close the server*/
         if (strcmp(ptr, "Close") == 0)
         {
@@ -154,6 +161,7 @@ int main()
         else
         {
             printf("No child need to be closed\n");
+            break;
         }
     }
 
