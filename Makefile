@@ -29,7 +29,7 @@ $(BUILD): $(SRC)
 	$(CC) $(CFLAG) $^ -o $@ $(INC_FLAG)
 
 #build executable file
-main:  src/main.o
+main:  src/main.o $(SHARED_OBJECT)
 	$(CC) $(LFLAG)  $^ -o $@  
 	@echo "$@ program has been compiled sucessfully"
 

@@ -9,8 +9,10 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <semaphore.h>
 #include <unistd.h>
 
+#define POSIX_SEMAPHORE_NAME "/named_semaphore"
 #define OBJECT_NAME "/shared_zone"
 #define SIZE 200
 
@@ -24,9 +26,14 @@ int val_read;
 int shared_mem_fd;
 int message_handling = 0;
 char *ptr;
+sem_t *sema_pointer;
 
 int main()
 {
+
+    /*using named semaphore*/
+    sem_unlink(POSIX_SEMAPHORE_NAME);
+    sema_pointer = sem_open(POSIX_SEMAPHORE_NAME, O_CREAT | O_EXCL, 0644, 1);
 
     /*using shared memory object*/
     shm_unlink(OBJECT_NAME);
@@ -100,10 +107,13 @@ int main()
         }
 
         /*when shared object has Close message, close the server*/
+        sem_wait(sema_pointer);
         if (strcmp(ptr, "Close") == 0)
         {
+            sem_post(sema_pointer);
             break;
         }
+        sem_post(sema_pointer);
     }
     /**********/
     /*Child process*/
@@ -116,11 +126,14 @@ int main()
     while (client_process_id == 0)
     {
         /*when shared object has Close message, close the client*/
+        sem_wait(sema_pointer);
         if (strcmp(ptr, "Close") == 0)
         {
+            sem_post(sema_pointer);
             close(client_fd);
             exit(EXIT_SUCCESS);
         }
+        sem_post(sema_pointer);
 
         ret = poll(&read_fdp, 1, 10);
         if (ret == 0)
@@ -143,7 +156,9 @@ int main()
         {
             close(client_fd);
             printf("Close server\n");
+            sem_wait(sema_pointer);
             sprintf(ptr, "Close");
+            sem_post(sema_pointer);
             exit(EXIT_SUCCESS);
         }
         else if (message_handling == DISCONNECTED)
@@ -167,5 +182,6 @@ int main()
     }
 
     shm_unlink(OBJECT_NAME);
+    sem_unlink(POSIX_SEMAPHORE_NAME);
     return 0;
 }
