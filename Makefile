@@ -15,7 +15,6 @@ INC_FLAG:= -I$(INC)/
 #build all target
 .PHONY: all
 all: main create_binary_file 
-	@rm src/*.o
 	- @echo "Run make execute or run export LD_LIBRARY_PATH="$$PWD" and run ./main"
 	
 $(SHARED_OBJECT) : $(OBJECT)
@@ -28,6 +27,7 @@ $(BUILD): $(SRC)
 #build executable file
 main:  src/main.o $(SHARED_OBJECT)
 	$(CC) $(LFLAG)  $^ -o $@  
+	@rm src/*.o
 	@echo "$@ program has been compiled sucessfully"
 
 create_binary_file: $(FILE).o
