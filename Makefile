@@ -6,8 +6,6 @@ OBJECT:=$(LIST_SRC:%.c=%.o)
 SHARED_OBJECT:=liball_in_one.so 
 SHARED_OBJECT_FLAG:=-lall_in_one
 FILE:=create_file/create_binary_file
-EXECUTE_SOURE:=$(wildcard add_environment_variable/*.c)
-EXECUTE_OBJECT:=$(EXECUTE_SOURE:%.c=%.o)
 CC:=gcc
 CFLAG:=-c -Wall  -fPIC 
 LFLAG:=-pthread -L./ $(SHARED_OBJECT_FLAG)
@@ -16,10 +14,9 @@ INC_FLAG:= -I$(INC)/
 
 #build all target
 .PHONY: all
-all: main create_binary_file path
+all: main create_binary_file 
 	@rm src/*.o
-	@echo "\nBefore running main, please execute this command in terminal"
-	@./path
+	- @echo "Run make execute or run export LD_LIBRARY_PATH="$$PWD" and run ./main"
 	
 $(SHARED_OBJECT) : $(OBJECT)
 	$(CC) -shared $^ -o $@
@@ -54,8 +51,9 @@ debug: main
 
 #execute the program
 .PHONY: execute
-execute: main
-	./main
+execute: main $(SHARED_OBJECT)
+	export LD_LIBRARY_PATH="$$PWD" && ./main
+	
 
 #clean the program and unessesary file
 .PHONY: clean
